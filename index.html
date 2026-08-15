@@ -648,7 +648,15 @@ updateCountdowns();
 // ==========================================
 // ⭐ 即時倒數功能結束
 // ==========================================
-
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js")
+    .then(() => {
+      console.log("Service Worker 註冊成功");
+    })
+    .catch(error => {
+      console.error("Service Worker 註冊失敗:", error);
+    });
+}
 </script>
 
 </body>
