@@ -520,6 +520,134 @@ setDefaultTime();
 renderTasks();
 
 setInterval(checkReminders, 10000);
+  // ==========================================
+// ⭐ 新功能：行程即時倒數
+// ==========================================
+
+function formatCountdown(ms) {
+    if (ms <= 0) {
+        return "已到時間";
+    }
+
+    const totalSeconds = Math.floor(ms / 1000);
+
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (days > 0) {
+        return `還有 ${days} 天 ${hours} 小時`;
+    }
+
+    if (hours > 0) {
+        return `還有 ${hours} 小時 ${minutes} 分`;
+    }
+
+    if (minutes > 0) {
+        return `還有 ${minutes} 分 ${seconds} 秒`;
+    }
+
+    return `還有 ${seconds} 秒`;
+}
+
+
+// 更新所有倒數
+function updateCountdowns() {
+    const now = Date.now();
+
+    document.querySelectorAll("[data-countdown-time]").forEach(element => {
+        const targetTime = Number(element.dataset.countdownTime);
+
+        if (!targetTime) return;
+
+        const remaining = targetTime - now;
+
+        element.textContent = formatCountdown(remaining);
+
+        // 已經到時間
+        if (remaining <= 0) {
+            element.classList.remove(
+                "text-blue-600",
+                "text-indigo-600",
+                "text-green-600"
+            );
+
+            element.classList.add("text-red-600");
+        }
+    });
+}
+
+
+// 在原本行程畫面加入倒數
+function addCountdownToTasks() {
+    if (typeof tasks === "undefined" || !Array.isArray(tasks)) {
+        return;
+    }
+
+    const taskElements = document.querySelectorAll("[data-task-id]");
+
+    taskElements.forEach(element => {
+        const taskId = element.dataset.taskId;
+
+        const task = tasks.find(t => String(t.id) === String(taskId));
+
+        if (!task || !task.targetTime) return;
+
+        let countdown = element.querySelector(".live-countdown");
+
+        if (!countdown) {
+            countdown = document.createElement("div");
+
+            countdown.className =
+                "live-countdown text-sm font-semibold text-indigo-600 mt-1";
+
+            countdown.dataset.countdownTime =
+                new Date(task.targetTime).getTime();
+
+            element.appendChild(countdown);
+        }
+    });
+
+    updateCountdowns();
+}
+
+
+// 每秒更新一次
+setInterval(updateCountdowns, 1000);
+
+
+// 頁面載入後更新
+setTimeout(() => {
+    addCountdownToTasks();
+    updateCountdowns();
+}, 500);
+
+
+// 每次畫面重新產生行程後，再更新倒數
+const originalRenderTasks = window.renderTasks;
+
+if (typeof originalRenderTasks === "function") {
+
+    window.renderTasks = function() {
+
+        originalRenderTasks();
+
+        setTimeout(() => {
+            addCountdownToTasks();
+            updateCountdowns();
+        }, 50);
+
+    };
+}
+
+// 初始化
+updateCountdowns();
+
+
+// ==========================================
+// ⭐ 即時倒數功能結束
+// ==========================================
 
 </script>
 
