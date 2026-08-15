@@ -592,7 +592,7 @@ function addCountdownToTasks() {
 
         const task = tasks.find(t => String(t.id) === String(taskId));
 
-        if (!task || !task.targetTime) return;
+        if (!task) return;
 
         let countdown = element.querySelector(".live-countdown");
 
@@ -603,7 +603,7 @@ function addCountdownToTasks() {
                 "live-countdown text-sm font-semibold text-indigo-600 mt-1";
 
             countdown.dataset.countdownTime =
-                new Date(task.targetTime).getTime();
+                new Date(task.time).getTime();
 
             element.appendChild(countdown);
         }
