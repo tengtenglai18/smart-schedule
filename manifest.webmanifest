@@ -1,0 +1,11 @@
+{
+  "name": "智慧行程助手",
+  "short_name": "行程助手",
+  "description": "智慧行程提醒助手",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f1f5f9",
+  "theme_color": "#4f46e5",
+  "lang": "zh-TW",
+  "icons": []
+}
