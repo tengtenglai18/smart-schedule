@@ -603,7 +603,7 @@ function addCountdownToTasks() {
                 "live-countdown text-sm font-semibold text-indigo-600 mt-1";
 
             countdown.dataset.countdownTime =
-                new Date(task.time).getTime();
+                task.targetTime;
 
             element.appendChild(countdown);
         }
