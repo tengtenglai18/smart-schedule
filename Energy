@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>多功能智慧行事曆</title>
+  <style>
+    :root {
+      --primary-color: #4A90E2;
+      --warning-color: #E74C3C;
+      --bg-color: #F5F7FA;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .calendar-card {
+      background: #FFFFFF;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      padding: 24px;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #555;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #DDD;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background-color: #357ABD;
+    }
+
+    .event-list {
+      margin-top: 20px;
+      list-style: none;
+      padding: 0;
+    }
+
+    .event-item {
+      background: #F9FAFB;
+      border-left: 4px solid var(--primary-color);
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .total-hours {
+      margin-top: 15px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    /* 警告視窗樣式 */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      max-width: 300px;
+      width: 80%;
+    }
+
+    .modal-content h3 {
+      color: var(--warning-color);
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="calendar-card">
+    <h2>📅 我的行程安排</h2>
+    
+    <div class="form-group">
+      <label for="eventDate">日期</label>
+      <input type="date" id="eventDate">
+    </div>
+
+    <div class="form-group">
+      <label for="eventTitle">行程名稱</label>
+      <input type="text" id="eventTitle" placeholder="例如：撰寫專案程式碼">
+    </div>
+
+    <div class="form-group">
+      <label for="eventHours">預計耗時（小時）</label>
+      <input type="number" id="eventHours" min="0.5" step="0.5" placeholder="例如：2">
+    </div>
+
+    <button onclick="addEvent()">新增行程</button>
+
+    <div class="total-hours" id="totalHoursDisplay">選定日期總時數：0 小時</div>
+
+    <ul class="event-list" id="eventList"></ul>
+  </div>
+
+  <!-- 超過 10 小時的提醒彈窗 -->
+  <div class="modal-overlay" id="warningModal">
+    <div class="modal-content">
+      <h3>⚠️ 溫馨提醒</h3>
+      <p>您今天的行程已經超過 <b>10 小時</b> 了！記得給自己留一點休息與充能的時間喔～ ☕</p>
+      <button onclick="closeModal()">我知道了</button>
+    </div>
+  </div>
+
+  <script>
+    // 預設日期為今天
+    document.getElementById('eventDate').valueAsDate = new Date();
+
+    // 儲存所有行程的陣列
+    const events = [];
+
+    function addEvent() {
+      const date = document.getElementById('eventDate').value;
+      const title = document.getElementById('eventTitle').value.trim();
+      const hours = parseFloat(document.getElementById('eventHours').value);
+
+      if (!date || !title || isNaN(hours) || hours <= 0) {
+        alert("請填寫完整的行程資訊與合理的時數！");
+        return;
+      }
+
+      // 新增行程資料
+      events.push({ date, title, hours });
+
+      // 清空輸入框
+      document.getElementById('eventTitle').value = '';
+      document.getElementById('eventHours').value = '';
+
+      // 更新列表與計算時數
+      updateCalendar(date);
+    }
+
+    function updateCalendar(targetDate) {
+      const listElement = document.getElementById('eventList');
+      listElement.innerHTML = '';
+
+      // 篩選當前選定日期的行程
+      const dayEvents = events.filter(e => e.date === targetDate);
+
+      // 計算當天總時數
+      const totalHours = dayEvents.reduce((sum, e) => sum + e.hours, 0);
+
+      // 顯示當天行程
+      dayEvents.forEach(e => {
+        const li = document.createElement('li');
+        li.className = 'event-item';
+        li.innerHTML = `<span>${e.title}</span> <b>${e.hours} 小時</b>`;
+        listElement.appendChild(li);
+      });
+
+      // 更新總時數文字
+      document.getElementById('totalHoursDisplay').innerText = `選定日期總時數：${totalHours} 小時`;
+
+      // 核心判斷：如果總時數超過 10 小時，觸發跳窗提醒
+      if (totalHours > 10) {
+        showModal();
+      }
+    }
+
+    // 當切換日期時，重新計算該日期的行程與時數
+    document.getElementById('eventDate').addEventListener('change', (e) => {
+      updateCalendar(e.target.value);
+    });
+
+    function showModal() {
+      document.getElementById('warningModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('warningModal').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
