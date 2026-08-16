@@ -3,484 +3,347 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>多功能智慧行事曆</title>
+  <style>
+    :root {
+      --primary-color: #4A90E2;
+      --success-color: #2ECC71;
+      --warning-color: #E74C3C;
+      --bg-color: #F5F7FA;
+    }
 
-  <meta name="theme-color" content="#4f46e5">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="智慧行程助手">
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
 
-  <link rel="manifest" href="./manifest.webmanifest">
+    .calendar-container {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
 
-  <title>智慧行程助手</title>
+    .card {
+      background: #FFFFFF;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      padding: 20px;
+    }
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    h2, h3 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    /* 出門打卡卡片樣式 */
+    .checkin-card {
+      background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+      border: 1px solid #bae6fd;
+    }
+
+    .weather-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 12px 0;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 12px;
+      border-radius: 8px;
+    }
+
+    .weather-temp {
+      font-size: 24px;
+      font-weight: bold;
+      color: #0284c7;
+    }
+
+    .outfit-recommendation {
+      font-size: 14px;
+      color: #334155;
+      background: #ffffff;
+      padding: 10px;
+      border-radius: 8px;
+      border-left: 4px solid #0284c7;
+      margin-top: 8px;
+    }
+
+    .btn-checkin {
+      background-color: var(--success-color);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      font-size: 16px;
+      transition: opacity 0.2s;
+    }
+
+    .btn-checkin:hover {
+      opacity: 0.9;
+    }
+
+    .btn-checkin:disabled {
+      background-color: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    /* 行事曆與行程表單 */
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #555;
+      font-size: 14px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #DDD;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .event-list {
+      margin-top: 15px;
+      list-style: none;
+      padding: 0;
+    }
+
+    .event-item {
+      background: #F9FAFB;
+      border-left: 4px solid var(--primary-color);
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .total-hours {
+      margin-top: 10px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    /* 彈窗樣式 */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      max-width: 320px;
+      width: 80%;
+    }
+
+    .modal-content h3 {
+      margin-top: 0;
+    }
+  </style>
 </head>
+<body>
 
-<body class="bg-slate-100 text-slate-800 min-h-screen pb-12 font-sans">
-
-<header class="bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 text-white py-6 px-4 shadow-lg sticky top-0 z-50">
-  <div class="max-w-md mx-auto flex justify-between items-center">
-    <div class="flex items-center space-x-3">
-      <div class="bg-white/20 p-2.5 rounded-xl">
-        <i class="fa-solid fa-bell text-xl text-amber-300"></i>
+  <div class="calendar-container">
+    
+    <div class="card checkin-card">
+      <h3>☀️ 每日出門打卡 & 天氣</h3>
+      <div class="weather-info">
+        <div>
+          <div style="font-size: 14px; color: #64748b;">當前天氣狀況</div>
+          <div id="weatherStatus" style="font-weight: bold;">讀取中...</div>
+        </div>
+        <div class="weather-temp" id="weatherTemp">--°C</div>
       </div>
-
-      <div>
-        <h1 class="text-xl font-bold">智慧行程助手</h1>
-        <p class="text-xs text-indigo-100">智慧倒推提前提醒</p>
+      <div class="outfit-recommendation" id="outfitText">
+        💡 穿著建議：準備載入中...
       </div>
+      <br>
+      <button class="btn-checkin" id="checkinBtn" onclick="doCheckin()">🚗 準備出門！立即打卡</button>
     </div>
 
-    <button
-      onclick="requestNotificationPermission()"
-      class="text-xs bg-white/10 border border-white/30 px-3 py-1.5 rounded-full">
-      🔔 啟用提醒
-    </button>
-  </div>
-</header>
-
-<main class="max-w-md mx-auto px-4 mt-6 space-y-5">
-
-<section class="bg-white p-4 rounded-2xl shadow-sm border">
-  <h2 class="text-xs font-bold text-slate-400 mb-3">
-    ⚡ 快速範本
-  </h2>
-
-  <div class="grid grid-cols-3 gap-2">
-
-    <button
-      onclick="applyTemplate('👶 接送小孩',30)"
-      class="p-3 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-semibold">
-      👶<br>接送小孩
-    </button>
-
-    <button
-      onclick="applyTemplate('👵 長輩看診',60)"
-      class="p-3 bg-emerald-50 text-emerald-700 rounded-xl text-xs font-semibold">
-      👵<br>長輩看診
-    </button>
-
-    <button
-      onclick="applyTemplate('🛒 採買用品',15)"
-      class="p-3 bg-amber-50 text-amber-700 rounded-xl text-xs font-semibold">
-      🛒<br>採買用品
-    </button>
-
-  </div>
-</section>
-
-<section class="bg-white p-5 rounded-2xl shadow-sm border">
-
-  <h2 id="formTitle" class="text-base font-bold mb-4">
-    ➕ 新增待辦行程
-  </h2>
-
-  <form id="taskForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
-
-    <input type="hidden" id="editTaskId">
-
-    <div>
-      <label class="block text-xs font-semibold text-slate-500 mb-1.5">
-        行程名稱
-      </label>
-
-      <input
-        id="taskTitle"
-        type="text"
-        required
-        placeholder="例如：帶小孩上課"
-        class="w-full px-3.5 py-2.5 bg-slate-50 border rounded-xl">
-    </div>
-
-    <div class="grid grid-cols-1 gap-3">
-
-      <div>
-        <label class="block text-xs font-semibold text-slate-500 mb-1.5">
-          預定時間
-        </label>
-
-        <input
-          id="taskTime"
-          type="datetime-local"
-          required
-          class="w-full max-w-full px-3 py-2.5 bg-slate-50 border rounded-xl">
+    <div class="card">
+      <h2>📅 行程安排</h2>
+      
+      <div class="form-group">
+        <label for="eventDate">日期</label>
+        <input type="date" id="eventDate">
       </div>
 
-      <div>
-        <label class="block text-xs font-semibold text-slate-500 mb-1.5">
-          提前提醒
-        </label>
-
-        <select
-          id="advanceMinutes"
-          class="w-full px-3 py-2.5 bg-slate-50 border rounded-xl">
-
-          <option value="15">提前 15 分鐘</option>
-          <option value="30">提前 30 分鐘</option>
-          <option value="60">提前 1 小時</option>
-
-        </select>
+      <div class="form-group">
+        <label for="eventTitle">行程名稱</label>
+        <input type="text" id="eventTitle" placeholder="例如：開會 / 寫程式">
       </div>
 
+      <div class="form-group">
+        <label for="eventHours">預計耗時（小時）</label>
+        <input type="number" id="eventHours" min="0.5" step="0.5" placeholder="例如：2">
+      </div>
+
+      <button class="btn-primary" onclick="addEvent()">新增行程</button>
+
+      <div class="total-hours" id="totalHoursDisplay">選定日期總時數：0 小時</div>
+
+      <ul class="event-list" id="eventList"></ul>
     </div>
-
-    <button
-      id="submitBtn"
-      type="submit"
-      class="w-full bg-indigo-600 text-white font-semibold py-3 rounded-xl">
-
-      ➕ 加入行程
-    </button>
-
-  </form>
-
-</section>
-
-<section class="bg-white p-5 rounded-2xl shadow-sm border">
-
-  <div class="flex justify-between items-center mb-3">
-
-    <h2 class="text-base font-bold">
-      📋 預定行程
-    </h2>
-
-    <span
-      id="taskCount"
-      class="text-xs bg-indigo-50 text-indigo-600 font-bold px-2.5 py-1 rounded-full">
-      0 項
-    </span>
 
   </div>
 
-  <div id="taskList" class="space-y-3"></div>
+  <div class="modal-overlay" id="infoModal">
+    <div class="modal-content">
+      <h3 id="modalTitle">提醒</h3>
+      <p id="modalBody"></p>
+      <button class="btn-primary" onclick="closeModal()">我知道了</button>
+    </div>
+  </div>
 
-</section>
+  <script>
+    // 預設日期為今天
+    document.getElementById('eventDate').valueAsDate = new Date();
 
-</main>
+    const events = [];
+    let currentWeather = { temp: 24, status: "多雲", rainRate: 20 }; // 預設模擬天氣數據
 
-<script>
+    // 1. 初始化天氣與穿著建議（模擬預報 API）
+    function initWeather() {
+      // 在實際開發中，這裡可以呼叫氣象局 API 或 OpenWeatherMap API
+      // 這裡先建立智慧穿著推薦邏輯：
+      const temp = currentWeather.temp;
+      const status = currentWeather.status;
+      let outfit = "";
 
-let tasks = JSON.parse(localStorage.getItem("helper_tasks") || "[]");
-
-function saveTasks() {
-  localStorage.setItem("helper_tasks", JSON.stringify(tasks));
-}
-
-function formatDateForInput(date) {
-  const pad = n => String(n).padStart(2,"0");
-  return date.getFullYear() + "-" +
-    pad(date.getMonth()+1) + "-" +
-    pad(date.getDate()) + "T" +
-    pad(date.getHours()) + ":" +
-    pad(date.getMinutes());
-}
-
-function setDefaultTime() {
-  const now = new Date();
-  now.setMinutes(now.getMinutes() + 60);
-  document.getElementById("taskTime").value = formatDateForInput(now);
-}
-
-function applyTemplate(title, advance) {
-  document.getElementById("taskTitle").value = title;
-  document.getElementById("advanceMinutes").value = advance;
-
-  if (!document.getElementById("taskTime").value) {
-    setDefaultTime();
-  }
-}
-
-async function requestNotificationPermission() {
-  if (!("Notification" in window)) {
-    alert("你的裝置目前不支援瀏覽器通知。");
-    return;
-  }
-
-  const permission = await Notification.requestPermission();
-
-  if (permission === "granted") {
-    alert("🔔 提醒功能已啟用！");
-  } else {
-    alert("請允許通知，才能收到提醒。");
-  }
-}
-
-function handleFormSubmit(event) {
-  event.preventDefault();
-
-  const title = document.getElementById("taskTitle").value.trim();
-  const time = document.getElementById("taskTime").value;
-  const advance = Number(document.getElementById("advanceMinutes").value);
-  const editId = document.getElementById("editTaskId").value;
-
-  if (!title || !time) return;
-
-  const targetTime = new Date(time).getTime();
-  const remindTime = targetTime - advance * 60 * 1000;
-
-  if (editId) {
-    tasks = tasks.map(task => {
-      if (task.id == editId) {
-        return {
-          ...task,
-          title,
-          targetTime,
-          remindTime,
-          advance,
-          notified: false
-        };
+      if (temp >= 28) {
+        outfit = "👕 氣溫偏高，建議穿著短袖透氣衣服，注意防曬補水！";
+      } else if (temp >= 20) {
+        outfit = "👔 氣候舒適，建議薄長袖或短袖搭一件薄外套，方便彈性穿脫。";
+      } else if (temp >= 15) {
+        outfit = "🧥 氣溫偏涼，建議穿著保暖外套、長褲。";
+      } else {
+        outfit = "🧣 寒冷天氣，請著厚外套、圍巾等禦寒衣物。";
       }
-      return task;
-    });
-  } else {
-    tasks.push({
-      id: Date.now(),
-      title,
-      targetTime,
-      remindTime,
-      advance,
-      notified: false
-    });
-  }
 
-  saveTasks();
-  renderTasks();
-  resetForm();
-}
+      if (currentWeather.rainRate > 30) {
+        outfit += " ☂️ 今日降雨機率較高，出門記得帶傘！";
+      }
 
-function resetForm() {
-  document.getElementById("taskForm").reset();
-  document.getElementById("editTaskId").value = "";
-  document.getElementById("formTitle").innerText = "➕ 新增待辦行程";
-  document.getElementById("submitBtn").innerText = "➕ 加入行程";
-  setDefaultTime();
-}
+      document.getElementById('weatherStatus').innerText = status;
+      document.getElementById('weatherTemp').innerText = `${temp}°C`;
+      document.getElementById('outfitText').innerText = outfit;
+    }
 
-function editTask(id) {
-  const task = tasks.find(t => t.id === id);
-  if (!task) return;
+    // 2. 出門打卡功能
+    function doCheckin() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const outfitMsg = document.getElementById('outfitText').innerText;
 
-  document.getElementById("editTaskId").value = task.id;
-  document.getElementById("taskTitle").value = task.title;
-  document.getElementById("taskTime").value = formatDateForInput(new Date(task.targetTime));
-  document.getElementById("advanceMinutes").value = task.advance;
-  document.getElementById("formTitle").innerText = "✏️ 編輯行程";
-  document.getElementById("submitBtn").innerText = "💾 儲存修改";
-}
+      // 禁用按鈕防止重複打卡
+      const btn = document.getElementById('checkinBtn');
+      btn.innerText = `✅ 今日已打卡 (${timeString})`;
+      btn.disabled = true;
 
-function deleteTask(id) {
-  tasks = tasks.filter(task => task.id !== id);
-  saveTasks();
-  renderTasks();
-}
+      // 跳出打卡成功並溫馨提示天氣與穿著
+      showModal(
+        "🎉 打卡成功！順利出門",
+        `打卡時間：${timeString}<br><br>${outfitMsg}<br><br>祝你有美好充實的一天！`
+      );
+    }
 
-function renderTasks() {
-  const list = document.getElementById("taskList");
-  const count = document.getElementById("taskCount");
+    // 3. 行程管理與 10 小時提醒
+    function addEvent() {
+      const date = document.getElementById('eventDate').value;
+      const title = document.getElementById('eventTitle').value.trim();
+      const hours = parseFloat(document.getElementById('eventHours').value);
 
-  count.innerText = tasks.length + " 項";
-  list.innerHTML = "";
+      if (!date || !title || isNaN(hours) || hours <= 0) {
+        alert("請填寫完整的行程資訊與合理的時數！");
+        return;
+      }
 
-  if (tasks.length === 0) {
-    list.innerHTML = '<div class="text-center py-8 text-slate-400 text-sm">目前沒有預定行程</div>';
-    return;
-  }
+      events.push({ date, title, hours });
 
-  tasks
-    .sort((a,b) => a.targetTime - b.targetTime)
-    .forEach(task => {
-      const date = new Date(task.targetTime);
-      const dateText = date.toLocaleString("zh-TW", {
-        month:"numeric",
-        day:"numeric",
-        hour:"2-digit",
-        minute:"2-digit",
-        hour12:false
+      document.getElementById('eventTitle').value = '';
+      document.getElementById('eventHours').value = '';
+
+      updateCalendar(date);
+    }
+
+    function updateCalendar(targetDate) {
+      const listElement = document.getElementById('eventList');
+      listElement.innerHTML = '';
+
+      const dayEvents = events.filter(e => e.date === targetDate);
+      const totalHours = dayEvents.reduce((sum, e) => sum + e.hours, 0);
+
+      dayEvents.forEach(e => {
+        const li = document.createElement('li');
+        li.className = 'event-item';
+        li.innerHTML = `<span>${e.title}</span> <b>${e.hours} 小時</b>`;
+        listElement.appendChild(li);
       });
 
-      const item = document.createElement("div");
+      document.getElementById('totalHoursDisplay').innerText = `選定日期總時數：${totalHours} 小時`;
 
-      // ⭐ 關鍵修正：加入 data-task-id 以利即時倒數腳本比對
-      item.dataset.taskId = task.id;
-      item.className = "p-4 bg-slate-50 rounded-xl border flex items-center justify-between gap-3";
-
-      item.innerHTML = `
-        <div class="flex-1">
-          <div class="font-bold text-sm mb-1">
-            ${escapeHtml(task.title)}
-          </div>
-
-          <div class="text-xs text-slate-500">
-            🕐 ${dateText}
-           　
-            ⏰ 提前 ${task.advance} 分鐘
-          </div>
-
-          <div class="text-xs mt-1 ${
-            task.notified
-              ? "text-slate-400"
-              : "text-indigo-600"
-          }">
-            ${
-              task.notified
-                ? "✓ 已提醒"
-                : "● 等待提醒"
-            }
-          </div>
-        </div>
-
-        <div class="flex gap-1">
-          <button
-            onclick="editTask(${task.id})"
-            class="p-2 text-amber-600">
-            ✏️
-          </button>
-
-          <button
-            onclick="deleteTask(${task.id})"
-            class="p-2 text-rose-600">
-            🗑️
-          </button>
-        </div>
-      `;
-
-      list.appendChild(item);
-    });
-}
-
-function escapeHtml(text) {
-  const div = document.createElement("div");
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-function checkReminders() {
-  const now = Date.now();
-  let changed = false;
-
-  tasks.forEach(task => {
-    if (!task.notified && now >= task.remindTime) {
-      task.notified = true;
-      changed = true;
-      const message = `「${task.title}」將於 ${task.advance} 分鐘後開始！`;
-
-      if ("Notification" in window && Notification.permission === "granted") {
-        new Notification("🔔 行程提醒", { body: message });
-      } else {
-        alert("🔔 " + message);
+      // 超過 10 小時觸發提醒
+      if (totalHours > 10) {
+        showModal(
+          "⚠️ 溫馨提醒",
+          "您今天的行程安排已經超過 <b>10 小時</b> 了！記得給自己留一點休息與充能的時間喔～ ☕"
+        );
       }
     }
-  });
 
-  if (changed) {
-    saveTasks();
-    renderTasks();
-  }
-}
+    document.getElementById('eventDate').addEventListener('change', (e) => {
+      updateCalendar(e.target.value);
+    });
 
-// ==========================================
-// ⭐ 新功能：行程即時倒數
-// ==========================================
-
-function formatCountdown(ms) {
-    if (ms <= 0) {
-        return "已到時間";
+    function showModal(title, htmlContent) {
+      document.getElementById('modalTitle').innerText = title;
+      document.getElementById('modalBody').innerHTML = htmlContent;
+      document.getElementById('infoModal').style.display = 'flex';
     }
 
-    const totalSeconds = Math.floor(ms / 1000);
-    const days = Math.floor(totalSeconds / 86400);
-    const hours = Math.floor((totalSeconds % 86400) / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
+    function closeModal() {
+      document.getElementById('infoModal').style.display = 'none';
+    }
 
-    if (days > 0) return `還有 ${days} 天 ${hours} 小時`;
-    if (hours > 0) return `還有 ${hours} 小時 ${minutes} 分`;
-    if (minutes > 0) return `還有 ${minutes} 分 ${seconds} 秒`;
-    return `還有 ${seconds} 秒`;
-}
-
-function updateCountdowns() {
-    const now = Date.now();
-
-    document.querySelectorAll("[data-countdown-time]").forEach(element => {
-        const targetTime = Number(element.dataset.countdownTime);
-        if (!targetTime) return;
-
-        const remaining = targetTime - now;
-        element.textContent = formatCountdown(remaining);
-
-        if (remaining <= 0) {
-            element.classList.remove("text-blue-600", "text-indigo-600", "text-green-600");
-            element.classList.add("text-red-600");
-        }
-    });
-}
-
-function addCountdownToTasks() {
-    if (typeof tasks === "undefined" || !Array.isArray(tasks)) return;
-
-    const taskElements = document.querySelectorAll("[data-task-id]");
-
-    taskElements.forEach(element => {
-        const taskId = element.dataset.taskId;
-        const task = tasks.find(t => String(t.id) === String(taskId));
-
-        if (!task) return;
-
-        let countdown = element.querySelector(".live-countdown");
-
-        if (!countdown) {
-            countdown = document.createElement("div");
-            countdown.className = "live-countdown text-sm font-semibold text-indigo-600 mt-1";
-            countdown.dataset.countdownTime = task.targetTime;
-            
-            // 插入至文字資訊區塊底部
-            const infoContainer = element.querySelector(".flex-1");
-            if (infoContainer) {
-              infoContainer.appendChild(countdown);
-            } else {
-              element.appendChild(countdown);
-            }
-        }
-    });
-
-    updateCountdowns();
-}
-
-// 攔截並擴充 renderTasks，確保重新繪製列表後會載入倒數
-const originalRenderTasks = window.renderTasks;
-if (typeof originalRenderTasks === "function") {
-    window.renderTasks = function() {
-        originalRenderTasks();
-        setTimeout(() => {
-            addCountdownToTasks();
-            updateCountdowns();
-        }, 50);
-    };
-}
-
-// 註冊 Service Worker
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(() => {});
-  });
-}
-
-// 初始化執行
-setDefaultTime();
-renderTasks();
-
-// 計時器設定
-setInterval(checkReminders, 10000);
-setInterval(updateCountdowns, 1000);
-
-setTimeout(() => {
-    addCountdownToTasks();
-    updateCountdowns();
-}, 500);
-
-</script>
-
+    // 頁面載入時初始化天氣
+    initWeather();
+  </script>
 </body>
 </html>
