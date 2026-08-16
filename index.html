@@ -168,9 +168,7 @@ function saveTasks() {
 }
 
 function formatDateForInput(date) {
-
   const pad = n => String(n).padStart(2,"0");
-
   return date.getFullYear() + "-" +
     pad(date.getMonth()+1) + "-" +
     pad(date.getDate()) + "T" +
@@ -179,19 +177,13 @@ function formatDateForInput(date) {
 }
 
 function setDefaultTime() {
-
   const now = new Date();
-
   now.setMinutes(now.getMinutes() + 60);
-
-  document.getElementById("taskTime").value =
-    formatDateForInput(now);
+  document.getElementById("taskTime").value = formatDateForInput(now);
 }
 
 function applyTemplate(title, advance) {
-
   document.getElementById("taskTitle").value = title;
-
   document.getElementById("advanceMinutes").value = advance;
 
   if (!document.getElementById("taskTime").value) {
@@ -200,58 +192,36 @@ function applyTemplate(title, advance) {
 }
 
 async function requestNotificationPermission() {
-
   if (!("Notification" in window)) {
-
     alert("你的裝置目前不支援瀏覽器通知。");
-
     return;
   }
 
-  const permission =
-    await Notification.requestPermission();
+  const permission = await Notification.requestPermission();
 
   if (permission === "granted") {
-
     alert("🔔 提醒功能已啟用！");
-
   } else {
-
     alert("請允許通知，才能收到提醒。");
-
   }
 }
 
 function handleFormSubmit(event) {
-
   event.preventDefault();
 
-  const title =
-    document.getElementById("taskTitle").value.trim();
-
-  const time =
-    document.getElementById("taskTime").value;
-
-  const advance =
-    Number(document.getElementById("advanceMinutes").value);
-
-  const editId =
-    document.getElementById("editTaskId").value;
+  const title = document.getElementById("taskTitle").value.trim();
+  const time = document.getElementById("taskTime").value;
+  const advance = Number(document.getElementById("advanceMinutes").value);
+  const editId = document.getElementById("editTaskId").value;
 
   if (!title || !time) return;
 
-  const targetTime =
-    new Date(time).getTime();
-
-  const remindTime =
-    targetTime - advance * 60 * 1000;
+  const targetTime = new Date(time).getTime();
+  const remindTime = targetTime - advance * 60 * 1000;
 
   if (editId) {
-
     tasks = tasks.map(task => {
-
       if (task.id == editId) {
-
         return {
           ...task,
           title,
@@ -260,149 +230,90 @@ function handleFormSubmit(event) {
           advance,
           notified: false
         };
-
       }
-
       return task;
-
     });
-
   } else {
-
     tasks.push({
-
       id: Date.now(),
-
       title,
-
       targetTime,
-
       remindTime,
-
       advance,
-
       notified: false
-
     });
-
   }
 
   saveTasks();
-
   renderTasks();
-
   resetForm();
-
 }
 
 function resetForm() {
-
   document.getElementById("taskForm").reset();
-
   document.getElementById("editTaskId").value = "";
-
-  document.getElementById("formTitle").innerText =
-    "➕ 新增待辦行程";
-
-  document.getElementById("submitBtn").innerText =
-    "➕ 加入行程";
-
+  document.getElementById("formTitle").innerText = "➕ 新增待辦行程";
+  document.getElementById("submitBtn").innerText = "➕ 加入行程";
   setDefaultTime();
-
 }
 
 function editTask(id) {
-
-  const task =
-    tasks.find(t => t.id === id);
-
+  const task = tasks.find(t => t.id === id);
   if (!task) return;
 
-  document.getElementById("editTaskId").value =
-    task.id;
-
-  document.getElementById("taskTitle").value =
-    task.title;
-
-  document.getElementById("taskTime").value =
-    formatDateForInput(new Date(task.targetTime));
-
-  document.getElementById("advanceMinutes").value =
-    task.advance;
-
-  document.getElementById("formTitle").innerText =
-    "✏️ 編輯行程";
-
-  document.getElementById("submitBtn").innerText =
-    "💾 儲存修改";
-
+  document.getElementById("editTaskId").value = task.id;
+  document.getElementById("taskTitle").value = task.title;
+  document.getElementById("taskTime").value = formatDateForInput(new Date(task.targetTime));
+  document.getElementById("advanceMinutes").value = task.advance;
+  document.getElementById("formTitle").innerText = "✏️ 編輯行程";
+  document.getElementById("submitBtn").innerText = "💾 儲存修改";
 }
 
 function deleteTask(id) {
-
-  tasks =
-    tasks.filter(task => task.id !== id);
-
+  tasks = tasks.filter(task => task.id !== id);
   saveTasks();
-
   renderTasks();
-
 }
 
 function renderTasks() {
+  const list = document.getElementById("taskList");
+  const count = document.getElementById("taskCount");
 
-  const list =
-    document.getElementById("taskList");
-
-  const count =
-    document.getElementById("taskCount");
-
-  count.innerText =
-    tasks.length + " 項";
-
+  count.innerText = tasks.length + " 項";
   list.innerHTML = "";
 
   if (tasks.length === 0) {
-
-    list.innerHTML =
-      '<div class="text-center py-8 text-slate-400 text-sm">目前沒有預定行程</div>';
-
+    list.innerHTML = '<div class="text-center py-8 text-slate-400 text-sm">目前沒有預定行程</div>';
     return;
   }
 
   tasks
     .sort((a,b) => a.targetTime - b.targetTime)
     .forEach(task => {
+      const date = new Date(task.targetTime);
+      const dateText = date.toLocaleString("zh-TW", {
+        month:"numeric",
+        day:"numeric",
+        hour:"2-digit",
+        minute:"2-digit",
+        hour12:false
+      });
 
-      const date =
-        new Date(task.targetTime);
+      const item = document.createElement("div");
 
-      const dateText =
-        date.toLocaleString("zh-TW", {
-          month:"numeric",
-          day:"numeric",
-          hour:"2-digit",
-          minute:"2-digit",
-          hour12:false
-        });
-
-      const item =
-        document.createElement("div");
-
-      item.className =
-        "p-4 bg-slate-50 rounded-xl border flex items-center justify-between gap-3";
+      // ⭐ 關鍵修正：加入 data-task-id 以利即時倒數腳本比對
+      item.dataset.taskId = task.id;
+      item.className = "p-4 bg-slate-50 rounded-xl border flex items-center justify-between gap-3";
 
       item.innerHTML = `
-
         <div class="flex-1">
-
           <div class="font-bold text-sm mb-1">
             ${escapeHtml(task.title)}
           </div>
 
           <div class="text-xs text-slate-500">
             🕐 ${dateText}
-           　
+            
             ⏰ 提前 ${task.advance} 分鐘
           </div>
 
@@ -411,19 +322,15 @@ function renderTasks() {
               ? "text-slate-400"
               : "text-indigo-600"
           }">
-
             ${
               task.notified
                 ? "✓ 已提醒"
                 : "● 等待提醒"
             }
-
           </div>
-
         </div>
 
         <div class="flex gap-1">
-
           <button
             onclick="editTask(${task.id})"
             class="p-2 text-amber-600">
@@ -435,92 +342,44 @@ function renderTasks() {
             class="p-2 text-rose-600">
             🗑️
           </button>
-
         </div>
       `;
 
       list.appendChild(item);
-
     });
-
 }
 
 function escapeHtml(text) {
-
-  const div =
-    document.createElement("div");
-
+  const div = document.createElement("div");
   div.textContent = text;
-
   return div.innerHTML;
-
 }
 
 function checkReminders() {
-
   const now = Date.now();
-
   let changed = false;
 
   tasks.forEach(task => {
-
-    if (!task.notified &&
-        now >= task.remindTime) {
-
+    if (!task.notified && now >= task.remindTime) {
       task.notified = true;
-
       changed = true;
+      const message = `「${task.title}」將於 ${task.advance} 分鐘後開始！`;
 
-      const message =
-        `「${task.title}」將於 ${task.advance} 分鐘後開始！`;
-
-      if (
-        "Notification" in window &&
-        Notification.permission === "granted"
-      ) {
-
-        new Notification("🔔 行程提醒", {
-          body: message
-        });
-
+      if ("Notification" in window && Notification.permission === "granted") {
+        new Notification("🔔 行程提醒", { body: message });
       } else {
-
         alert("🔔 " + message);
-
       }
-
     }
-
   });
 
   if (changed) {
-
     saveTasks();
-
     renderTasks();
-
   }
-
 }
 
-if ("serviceWorker" in navigator) {
-
-  window.addEventListener("load", () => {
-
-    navigator.serviceWorker
-      .register("./sw.js")
-      .catch(() => {});
-
-  });
-
-}
-
-setDefaultTime();
-
-renderTasks();
-
-setInterval(checkReminders, 10000);
-  // ==========================================
+// ==========================================
 // ⭐ 新功能：行程即時倒數
 // ==========================================
 
@@ -530,66 +389,41 @@ function formatCountdown(ms) {
     }
 
     const totalSeconds = Math.floor(ms / 1000);
-
     const days = Math.floor(totalSeconds / 86400);
     const hours = Math.floor((totalSeconds % 86400) / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
 
-    if (days > 0) {
-        return `還有 ${days} 天 ${hours} 小時`;
-    }
-
-    if (hours > 0) {
-        return `還有 ${hours} 小時 ${minutes} 分`;
-    }
-
-    if (minutes > 0) {
-        return `還有 ${minutes} 分 ${seconds} 秒`;
-    }
-
+    if (days > 0) return `還有 ${days} 天 ${hours} 小時`;
+    if (hours > 0) return `還有 ${hours} 小時 ${minutes} 分`;
+    if (minutes > 0) return `還有 ${minutes} 分 ${seconds} 秒`;
     return `還有 ${seconds} 秒`;
 }
 
-
-// 更新所有倒數
 function updateCountdowns() {
     const now = Date.now();
 
     document.querySelectorAll("[data-countdown-time]").forEach(element => {
         const targetTime = Number(element.dataset.countdownTime);
-
         if (!targetTime) return;
 
         const remaining = targetTime - now;
-
         element.textContent = formatCountdown(remaining);
 
-        // 已經到時間
         if (remaining <= 0) {
-            element.classList.remove(
-                "text-blue-600",
-                "text-indigo-600",
-                "text-green-600"
-            );
-
+            element.classList.remove("text-blue-600", "text-indigo-600", "text-green-600");
             element.classList.add("text-red-600");
         }
     });
 }
 
-
-// 在原本行程畫面加入倒數
 function addCountdownToTasks() {
-    if (typeof tasks === "undefined" || !Array.isArray(tasks)) {
-        return;
-    }
+    if (typeof tasks === "undefined" || !Array.isArray(tasks)) return;
 
     const taskElements = document.querySelectorAll("[data-task-id]");
 
     taskElements.forEach(element => {
         const taskId = element.dataset.taskId;
-
         const task = tasks.find(t => String(t.id) === String(taskId));
 
         if (!task) return;
@@ -598,65 +432,54 @@ function addCountdownToTasks() {
 
         if (!countdown) {
             countdown = document.createElement("div");
-
-            countdown.className =
-                "live-countdown text-sm font-semibold text-indigo-600 mt-1";
-
-            countdown.dataset.countdownTime =
-                task.targetTime;
-
-            element.appendChild(countdown);
+            countdown.className = "live-countdown text-sm font-semibold text-indigo-600 mt-1";
+            countdown.dataset.countdownTime = task.targetTime;
+            
+            // 插入至文字資訊區塊底部
+            const infoContainer = element.querySelector(".flex-1");
+            if (infoContainer) {
+              infoContainer.appendChild(countdown);
+            } else {
+              element.appendChild(countdown);
+            }
         }
     });
 
     updateCountdowns();
 }
 
+// 攔截並擴充 renderTasks，確保重新繪製列表後會載入倒數
+const originalRenderTasks = window.renderTasks;
+if (typeof originalRenderTasks === "function") {
+    window.renderTasks = function() {
+        originalRenderTasks();
+        setTimeout(() => {
+            addCountdownToTasks();
+            updateCountdowns();
+        }, 50);
+    };
+}
 
-// 每秒更新一次
+// 註冊 Service Worker
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
+
+// 初始化執行
+setDefaultTime();
+renderTasks();
+
+// 計時器設定
+setInterval(checkReminders, 10000);
 setInterval(updateCountdowns, 1000);
 
-
-// 頁面載入後更新
 setTimeout(() => {
     addCountdownToTasks();
     updateCountdowns();
 }, 500);
 
-
-// 每次畫面重新產生行程後，再更新倒數
-const originalRenderTasks = window.renderTasks;
-
-if (typeof originalRenderTasks === "function") {
-
-    window.renderTasks = function() {
-
-        originalRenderTasks();
-
-        setTimeout(() => {
-            addCountdownToTasks();
-            updateCountdowns();
-        }, 50);
-
-    };
-}
-
-// 初始化
-updateCountdowns();
-
-
-// ==========================================
-// ⭐ 即時倒數功能結束
-// ==========================================
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./sw.js")
-    .then(() => {
-      console.log("Service Worker 註冊成功");
-    })
-    .catch(error => {
-      console.error("Service Worker 註冊失敗:", error);
-    });
-}
 </script>
 
 </body>
